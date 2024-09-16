@@ -1,5 +1,6 @@
 const express = require("express");
 const fs = require("fs");
+const _ = require('lodash')     //to introduce _.pullAt() method
 
 PORT = 8000;
 users = require("./MOCK_DATA.json");
@@ -9,7 +10,6 @@ app = express();
 //middleware
 app.use(express.urlencoded({ extended: false}));
 
-//Routes
 //html SSR (Server Side Rendering)
 app.get("/users", (req,res)=>{
     const html = `
@@ -25,23 +25,48 @@ app.get("/api/users", (req,res) => {
     return res.json(users);
 });
 app                             //if on same URL multiple routes have to be created do this
-    .route("/api/users/:id") 
+    .route("/api/users/:id")
     .get((req,res)=>{
         const id = Number(req.params.id); //converting string id to numerical
         const user = users.find((user) => user.id === id);
         return res.json(user);
     })
     .patch((req, res)=>{
-        return res.json({status:"Pending"});
+        const body = req.body;
+        const id = Number(req.params.id);
+        const user = users.find((user) => user.id === id);//user found
+
+        user_updation(user);
+        
+        // updating user
+        function user_updation(user){
+        user.first_name = body.first_name;
+        user.last_name = body.last_name;
+        user.email = body.email;
+        user.gender = body.gender;
+        user.job_title = body.job_title;
+        };
+
+        // updating DB
+        fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {     //stringify = converting object to string
+            return res.json({status:`success user ${id} updated`});
+        });
     })
     .delete((req, res)=>{
-        return res.json({status:"Pending"});
+        const id = Number(req.params.id);
+        // users.splice(id-1,1);
+        _.pullAt(users, [id-1]);
+
+        // updating DB
+        fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {     //stringify = converting object to string
+            return res.json({status:`Success, user ${id} deleted`});
+        });
     })
 
 
 app.post("/api/users", (req, res)=>{
     const body = req.body;
-    users.push({
+    users.push({ 
         id: users.length + 1,
         first_name: body.first_name,
         last_name: body.last_name,
