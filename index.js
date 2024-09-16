@@ -21,14 +21,14 @@ app.use((req, res, next)=>{
 });
 
 //html SSR (Server Side Rendering)
-app.get("/users", (req,res)=>{
-    const html = `
-    <ul>
-        ${users.map((user) => `<li>${user.first_name}</li>`).join("")}
-    </ul>
-    `;
-    res.send(html);
-})
+// app.get("/users", (req,res)=>{
+//     const html = `
+//     <ul>
+//         ${users.map((user) => `<li>${user.first_name}</li>`).join("")}
+//     </ul>
+//     `;
+//     res.send(html);
+// })
 
 //returning jsons
 app.get("/api/users", (req,res) => {
@@ -64,8 +64,18 @@ app                             //if on same URL multiple routes have to be crea
     })
     .delete((req, res)=>{
         const id = Number(req.params.id);
-        // users.splice(id-1,1);
-        _.pullAt(users, [id-1]);
+        const user = users.find((user) => user.id === id);
+
+        user_deletion(user);
+
+        function user_deletion(user){
+            user.first_name = null;
+            user.last_name = null;
+            user.email = null;
+            user.gender = null;
+            user.job_title = null;
+            };
+        //_.pullAt(users, [id-1]);
 
         // updating DB
         fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {     //stringify = converting object to string
