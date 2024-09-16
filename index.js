@@ -10,6 +10,16 @@ app = express();
 //middleware
 app.use(express.urlencoded({ extended: false}));
 
+app.use((req, res, next)=>{
+    fs.appendFile(
+        "log.txt",
+        `\n${Date.now()}: ${req.method}: ${req.path}`,
+        (err, data)=>{
+            next();
+        }
+    );
+});
+
 //html SSR (Server Side Rendering)
 app.get("/users", (req,res)=>{
     const html = `
