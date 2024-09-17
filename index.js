@@ -1,3 +1,4 @@
+const { error } = require("console");
 const express = require("express");
 const fs = require("fs");
 const _ = require('lodash')     //to introduce _.pullAt() method
@@ -39,6 +40,7 @@ app                             //if on same URL multiple routes have to be crea
     .get((req,res)=>{
         const id = Number(req.params.id); //converting string id to numerical
         const user = users.find((user) => user.id === id);
+        if(!user){return res.status(404).json({error:'user not found'})};
         res.setHeader("X-myName", "Rahul"); // Custom headers are set with X in front of their names
         return res.json(user);
     })
@@ -87,6 +89,9 @@ app                             //if on same URL multiple routes have to be crea
 
 app.post("/api/users", (req, res)=>{
     const body = req.body;
+    if(!body || !body.first_name ||!body.last_name ||!body.email ||!body.gender||!body.job_title){
+        return res.status(400).json({msg: "All entry fields not filled"})
+    };
     users.push({ 
         id: users.length + 1,
         first_name: body.first_name,
