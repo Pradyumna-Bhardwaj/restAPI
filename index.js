@@ -39,6 +39,7 @@ app                             //if on same URL multiple routes have to be crea
     .get((req,res)=>{
         const id = Number(req.params.id); //converting string id to numerical
         const user = users.find((user) => user.id === id);
+        res.setHeader("X-myName", "Rahul"); // Custom headers are set with X in front of their names
         return res.json(user);
     })
     .patch((req, res)=>{
