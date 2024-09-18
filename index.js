@@ -1,7 +1,6 @@
 const { error } = require("console");
 const express = require("express");
 const fs = require("fs");
-const _ = require('lodash')     //to introduce _.pullAt() method
 
 PORT = 8000;
 users = require("./MOCK_DATA.json");
@@ -78,7 +77,6 @@ app                             //if on same URL multiple routes have to be crea
             user.gender = null;
             user.job_title = null;
             };
-        //_.pullAt(users, [id-1]);
 
         // updating DB
         fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {     //stringify = converting object to string
@@ -87,11 +85,13 @@ app                             //if on same URL multiple routes have to be crea
     })
 
 
-app.post("/api/users", (req, res)=>{
+app.post("/api/users", async (req, res)=>{
     const body = req.body;
+    
     if(!body || !body.first_name ||!body.last_name ||!body.email ||!body.gender||!body.job_title){
         return res.status(400).json({msg: "All entry fields not filled"})
     };
+
     users.push({ 
         id: users.length + 1,
         first_name: body.first_name,
