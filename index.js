@@ -2,11 +2,44 @@ const { error } = require("console");
 const express = require("express");
 const fs = require("fs");
 const _ = require('lodash')     //to introduce _.pullAt() method
-
+const mongoose = require("mongoose");
 PORT = 8000;
 users = require("./MOCK_DATA.json");
 
 app = express();
+
+//MongoDB connection
+mongoose.connect('mongodb://127.0.0.1:27017/restAPI_DB')
+.then(() => console.log('MongoDB connected'))
+.catch((err) => console.log('Mongo Error'));
+
+//Schema
+const userSchema = new mongoose.Schema({
+    first_name: {
+        type: String,
+        required: true,
+    },
+    last_name: {
+        type: String,
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    job_title: {
+        type: String,
+    },
+    gender : {
+        type: String
+    },
+},
+{timestamps: true}
+);
+
+//making model with the schema
+const User = mongoose.model('user', userSchema);
+
 
 //middleware
 app.use(express.urlencoded({ extended: false}));
@@ -32,6 +65,7 @@ app.use((req, res, next)=>{
 // })
 
 //returning jsons
+
 app.get("/api/users", (req,res) => {
     return res.json(users);
 });
@@ -87,22 +121,37 @@ app                             //if on same URL multiple routes have to be crea
     })
 
 
-app.post("/api/users", (req, res)=>{
+app.post("/api/users", async (req, res)=>{
     const body = req.body;
+    
     if(!body || !body.first_name ||!body.last_name ||!body.email ||!body.gender||!body.job_title){
         return res.status(400).json({msg: "All entry fields not filled"})
     };
-    users.push({ 
-        id: users.length + 1,
-        first_name: body.first_name,
-        last_name: body.last_name,
-        email: body.email,
-        gender: body.gender,
-        job_title: body.job_title
-    })
-    fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {     //stringify = converting object to string
-        return res.json({status: "success", id: users.length});
+
+    //Appending in Mongo DB
+    const result = await User.create({
+        first_name : body.first_name,
+        last_name : body.last_name,
+        email : body.email,
+        gender : body.gender,
+        job_title : body.job_title,
     });
+    console.log(result);
+
+    return res.status(201).json({msg: "success"});
+
+    //.JSON file DB
+    // users.push({ 
+    //     id: users.length + 1,
+    //     first_name: body.first_name,
+    //     last_name: body.last_name,
+    //     email: body.email,
+    //     gender: body.gender,
+    //     job_title: body.job_title
+    // })
+    // fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {     //stringify = converting object to string
+    //     return res.json({status: "success", id: users.length});
+    // });
 });
 
 
